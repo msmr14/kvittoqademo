@@ -52,7 +52,7 @@ class TestKvittoAPI:
             "promo_code": "KVITTO10"
         }
         resp = requests.post(f"{BASE_URL}/payments", json=payload, timeout=10)
-        assert resp.status_code in (200, 201)
+        assert resp.status_code == 201, f"BUG-13: Expected 201 Created, got {resp.status_code}"
         data = resp.json()
         expected_amount = 17910  # 19900 - 10% = 17910
         assert data.get("amount") == expected_amount, (

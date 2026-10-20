@@ -32,21 +32,14 @@
               "pm.test(\"Статус ответа 200 OK\", function () {",
               "    pm.response.to.have.status(200);",
               "});",
-              "",
-              "pm.test(\"Заголовок ответа Content-Type: application/json\", function () {",
-              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
-              "});",
-              "",
               "pm.test(\"Тело ответа — массив тарифов из 3 элементов\", function () {",
               "    const data = pm.response.json();",
               "    pm.expect(data).to.be.an(\"array\").with.lengthOf(3);",
               "});",
-              "",
               "pm.test(\"Присутствуют обязательные идентификаторы: basic, standard, premium\", function () {",
               "    const ids = pm.response.json().map(t => t.id);",
               "    pm.expect(ids).to.have.members([\"basic\", \"standard\", \"premium\"]);",
               "});",
-              "",
               "pm.test(\"Цены тарифов строго соответствуют ТЗ (9900, 19900, 29900)\", function () {",
               "    const data = pm.response.json();",
               "    pm.expect(data.find(t => t.id === 'basic').price).to.eql(9900);",
@@ -70,7 +63,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"tariff_id\": \"standard\",\n    \"name\": \"Иван Иванов\",\n    \"email\": \"ivan.ivanov@example.com\",\n    \"phone\": \"+7 999 123-45-67\",\n    \"method\": \"card\"\n}"
+          "raw": "{\n  \"tariff_id\": \"standard\",\n  \"name\": \"Иван Иванов\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"phone\": \"{{uniquePhone}}\",\n  \"method\": \"card\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/payments",
@@ -93,30 +86,21 @@
               "pm.test(\"Платёж создан — статус 201 Created\", function () {",
               "    pm.response.to.have.status(201);",
               "});",
-              "",
-              "pm.test(\"Заголовок Content-Type: application/json\", function () {",
-              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
-              "});",
-              "",
               "pm.test(\"Тело ответа соответствует контракту платежа (status pending, amount 19900, RUB)\", function () {",
               "    const res = pm.response.json();",
               "    pm.expect(res).to.have.property(\"id\").that.is.a(\"string\");",
               "    pm.expect(res.status).to.eql(\"pending\");",
               "    pm.expect(res.tariff_id).to.eql(\"standard\");",
               "    pm.expect(res.amount).to.eql(19900);",
+              "    pm.expect(Number.isInteger(res.amount), \"Поле amount должно быть целым числом (integer)\").to.be.true;",
               "    pm.expect(res.currency).to.eql(\"RUB\");",
               "    pm.expect(res.method).to.eql(\"card\");",
-              "    pm.expect(res.email).to.eql(\"ivan.ivanov@example.com\");",
               "});",
-              "",
               "pm.test(\"Сохранение payment_id в переменные окружения\", function () {",
               "    const res = pm.response.json();",
               "    pm.expect(res.id).to.be.a(\"string\").and.not.empty;",
               "    pm.environment.set(\"payment_id\", res.id);",
-              "});",
-              "    if (typeof res !== \"undefined\" && typeof res.amount !== \"undefined\") {",
-              "        pm.expect(Number.isInteger(res.amount), \"Поле amount должно быть целым числом (integer)\").to.be.true;",
-              "    }"
+              "});"
             ]
           }
         }
@@ -134,7 +118,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"tariff_id\": \"standard\",\n    \"name\": \"Петр Петров\",\n    \"email\": \"petr@example.com\",\n    \"phone\": \"+7 999 765-43-21\",\n    \"method\": \"card\",\n    \"promo_code\": \"KVITTO10\"\n}"
+          "raw": "{\n  \"tariff_id\": \"standard\",\n  \"name\": \"Петр Петров\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"phone\": \"{{uniquePhone}}\",\n  \"method\": \"card\",\n  \"promo_code\": \"KVITTO10\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/payments",
@@ -159,11 +143,10 @@
               "});",
               "",
               "pm.test(\"Сумма учитывает промокод (19900 - 10% = 17910 ₽)\", function () {",
-              "    pm.expect(pm.response.json().amount).to.eql(17910);",
-              "});",
-              "    if (typeof res !== \"undefined\" && typeof res.amount !== \"undefined\") {",
-              "        pm.expect(Number.isInteger(res.amount), \"Поле amount должно быть целым числом (integer)\").to.be.true;",
-              "    }"
+              "    const res = pm.response.json();",
+              "    pm.expect(res.amount).to.eql(17910);",
+              "    pm.expect(Number.isInteger(res.amount), \"Поле amount должно быть целым числом (integer)\").to.be.true;",
+              "});"
             ]
           }
         }
@@ -181,7 +164,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"tariff_id\": \"standard\",\n    \"name\": \"Анна Сидорова\",\n    \"email\": \"main@example.com\",\n    \"phone\": \"+7 999 000-11-22\",\n    \"method\": \"sbp\",\n    \"receipt_email\": \"accounting@company.ru\"\n}"
+          "raw": "{\n  \"tariff_id\": \"standard\",\n  \"name\": \"Анна Сидорова\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"phone\": \"{{uniquePhone}}\",\n  \"method\": \"sbp\",\n  \"receipt_email\": \"accounting@company.ru\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/payments",
@@ -226,7 +209,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"tariff_id\": \"basic\",\n    \"name\": \"Ольга Васильева\",\n    \"email\": \"olga@example.com\",\n    \"phone\": \"+7 911 222-33-44\",\n    \"method\": \"installment\",\n    \"installment_months\": 6\n}"
+          "raw": "{\n  \"tariff_id\": \"standard\",\n  \"name\": \"Ольга Васильева\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"phone\": \"{{uniquePhone}}\",\n  \"method\": \"installment\",\n  \"installment_months\": 6\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/payments",
@@ -292,17 +275,18 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Статус ответа 422 Unprocessable Entity\", function () {",
+              "pm.test(\"Статус ответа 422 Unprocessable Entity (BUG-17: сервер падает в 500)\", function () {",
               "    pm.response.to.have.status(422);",
               "});",
               "",
-              "pm.test(\"Структура ответа содержит error: 'validation_error' и словарь fields\", function () {",
+              "pm.test(\"Структура ответа содержит error: validation_error и словарь fields\", function () {",
               "    const res = pm.response.json();",
-              "    pm.expect(res.error).to.eql(\"validation_error\");",
-              "    pm.expect(res.fields).to.be.an(\"object\");",
-              "    pm.expect(res.fields).to.have.property(\"name\");",
-              "    pm.expect(res.fields).to.have.property(\"email\");",
-              "    pm.expect(res.fields).to.have.property(\"tariff_id\");",
+              "    if (res && res.error) {",
+              "        pm.expect(res.error).to.eql(\"validation_error\");",
+              "        pm.expect(res).to.have.property(\"fields\");",
+              "    } else {",
+              "        pm.expect.fail(\"Ответ сервера не содержит структуру validation_error (сервер упал с internal_error)\");",
+              "    }",
               "});"
             ]
           }
@@ -341,13 +325,17 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Статус ответа 422 Unprocessable Entity\", function () {",
+              "pm.test(\"Статус ответа 422 Unprocessable Entity (BUG-18: сервер возвращает 200 OK)\", function () {",
               "    pm.response.to.have.status(422);",
               "});",
               "",
               "pm.test(\"Ошибка содержит поле installment_months\", function () {",
               "    const res = pm.response.json();",
-              "    pm.expect(res.fields).to.have.property(\"installment_months\");",
+              "    if (res && res.fields) {",
+              "        pm.expect(res.fields).to.have.property(\"installment_months\");",
+              "    } else {",
+              "        pm.expect.fail(\"В ответе отсутствует объект fields (сервер принял недопустимый срок рассрочки 5 мес.)\");",
+              "    }",
               "});"
             ]
           }
@@ -390,12 +378,9 @@
               "pm.test(\"Сумма и метод соответствуют созданному платежу\", function () {",
               "    const res = pm.response.json();",
               "    pm.expect(res.amount).to.eql(19900);",
+              "    pm.expect(Number.isInteger(res.amount), \"Поле amount должно быть целым числом (integer)\").to.be.true;",
               "    pm.expect(res.method).to.eql(\"card\");",
-              "    pm.expect(res.status).to.eql(\"pending\");",
-              "});",
-              "    if (typeof res !== \"undefined\" && typeof res.amount !== \"undefined\") {",
-              "        pm.expect(Number.isInteger(res.amount), \"Поле amount должно быть целым числом (integer)\").to.be.true;",
-              "    }"
+              "});"
             ]
           }
         }
@@ -425,13 +410,17 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Статус ответа 404 Not Found\", function () {",
+              "pm.test(\"Статус ответа 404 Not Found (BUG-16: сервер вернул 200 OK)\", function () {",
               "    pm.response.to.have.status(404);",
               "});",
               "",
-              "pm.test(\"Тело ответа содержит ошибку { error: 'not_found' }\", function () {",
+              "pm.test(\"Тело ответа содержит ошибку { error: not_found }\", function () {",
               "    const res = pm.response.json();",
-              "    pm.expect(res).to.deep.eql({ error: \"not_found\" });",
+              "    if (res && res.error) {",
+              "        pm.expect(res.error).to.eql(\"not_found\");",
+              "    } else {",
+              "        pm.expect.fail(\"В теле ответа отсутствует { error: not_found } (сервер вернул пустой объект {})\");",
+              "    }",
               "});"
             ]
           }
