@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Pytest / Playwright
+.pytest_cache/
+test-results/
+playwright-report/
+blob-report/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+~$*
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Temporary / Legacy files
+kvitto_qa_tables.xlsx
+*.tmp
+*.log
+*.bak
+*.orig

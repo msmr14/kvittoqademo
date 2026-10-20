@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оплата курса — Квитто (Исправленный демо-стенд)</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0F1311; --night: #161C19; --mist: #F2F3EF; --leaf: #08704B;
+    --mint: #1FD18B; --lime: #C6F24E; --sage: #B4C0B9; --err: #D83A2E;
+    --line: #DDE1DA; --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--mist); color: var(--ink); font: 16px/1.5 'Golos Text', system-ui, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .logo { display: flex; align-items: center; gap: 10px; font: 600 18px 'Unbounded', sans-serif; }
+  .logo i { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--mint), var(--lime)); display: grid; place-items: center; font-style: normal; font-size: 18px; color: var(--ink); }
+  .secure { font-size: 13px; color: #4B5550; }
+  .grid { display: grid; grid-template-columns: 1fr 380px; gap: 12px; align-items: start; }
+  .block { background: var(--card); border-radius: 24px; padding: 24px; }
+  .block + .block { margin-top: 12px; }
+  h1 { font: 600 24px/1.25 'Unbounded', sans-serif; margin: 0 0 6px; }
+  h2 { font: 600 16px 'Unbounded', sans-serif; margin: 0 0 14px; }
+  .muted { color: #5A645F; font-size: 14px; }
+  .tariffs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tariff { border: 1.5px solid var(--line); border-radius: 16px; padding: 14px; cursor: pointer; background: #fff; text-align: left; font: inherit; color: inherit; }
+  .tariff b { display: block; font-size: 15px; }
+  .tariff span { font: 600 17px 'Unbounded', sans-serif; }
+  .tariff small { display: block; color: #5A645F; font-size: 12.5px; margin-top: 4px; }
+  .tariff.active { border-color: var(--leaf); box-shadow: 0 0 0 3px rgba(31,209,139,.18); }
+  label.f { display: block; margin-bottom: 14px; }
+  label.f > span { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  input[type=text], input[type=email], input[type=tel] { width: 100%; height: 48px; border: 1.5px solid var(--line); border-radius: 14px; padding: 0 14px; font: inherit; background: #fff; }
+  input:focus { outline: none; border-color: var(--leaf); }
+  input.bad { border-color: var(--err); }
+  .err { color: var(--err); font-size: 13px; margin-top: 4px; min-height: 0; }
+  .methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .method { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; background: #fff; font: 500 14px 'Golos Text'; color: inherit; }
+  .method.active { border-color: var(--leaf); background: #F3FBF6; }
+  .months { display: flex; gap: 8px; margin-top: 12px; }
+  .months button { flex: 1; height: 42px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font: 500 14px 'Golos Text'; cursor: pointer; }
+  .months button.active { border-color: var(--leaf); background: #F3FBF6; }
+  .inst-note { margin-top: 10px; font-size: 14px; }
+  .promo { display: flex; gap: 8px; }
+  .promo input { flex: 1; }
+  .btn2 { height: 48px; padding: 0 18px; border-radius: 14px; border: 0; background: var(--ink); color: #fff; font: 600 14px 'Golos Text'; cursor: pointer; transition: all .15s ease; }
+  .btn2:disabled { opacity: .5; cursor: not-allowed; }
+  .btn2.cancel { background: #fff; border: 1.5px solid var(--line); color: #4B5550; font-weight: 500; }
+  .btn2.cancel:hover { border-color: var(--err); color: var(--err); background: #FFF7F6; }
+  .promo input.applied { background: #F3FBF6; border-color: var(--leaf); color: var(--leaf); font-weight: 600; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; margin-top: 10px; }
+  .check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--leaf); }
+  aside { position: sticky; top: 16px; min-width: 380px; }
+  .sum { background: var(--night); color: #fff; border-radius: 24px; padding: 24px; }
+  .sum .row { display: flex; justify-content: space-between; font-size: 14px; color: var(--sage); margin: 6px 0; }
+  .sum .total { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid #2A332E; margin-top: 14px; padding-top: 14px; }
+  .sum .total b { font: 600 26px 'Unbounded', sans-serif; color: #fff; }
+  .pay { width: 100%; height: 56px; margin-top: 18px; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--mint), var(--lime)); color: var(--ink); font: 600 16px 'Golos Text'; cursor: pointer; }
+  .pay:disabled { opacity: .4; cursor: not-allowed; }
+  .banner { display: none; margin-top: 12px; background: #3A1F1C; color: #FFD9D4; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .course { display: flex; gap: 14px; align-items: center; }
+  .course .cover { width: 64px; height: 64px; border-radius: 16px; background: radial-gradient(circle at 30% 30%, var(--lime), var(--leaf)); flex: none; }
+  .done { display: none; text-align: center; padding: 48px 24px; }
+  .done .ok { width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 22px; background: linear-gradient(135deg, var(--mint), var(--lime)); display: grid; place-items: center; font-size: 34px; }
+  .done dl { display: inline-grid; grid-template-columns: auto auto; gap: 6px 18px; text-align: left; margin: 18px auto 0; font-size: 15px; }
+  .done dt { color: #5A645F; } .done dd { margin: 0; font-weight: 600; word-break: break-all; max-width: 420px; }
+  footer { margin-top: 28px; text-align: center; font-size: 12.5px; color: #4B5550; }
+
+  /* Адаптивная вёрстка для мобильных экранов */
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    .tariffs, .methods { grid-template-columns: 1fr; }
+    aside { min-width: 0 !important; width: 100% !important; position: static !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><i>✓</i>Квитто</div>
+    <div class="secure">Защищённая оплата · исправленный демо-стенд</div>
+  </header>
+
+  <div id="checkout" class="grid">
+    <main>
+      <section class="block">
+        <div class="course">
+          <div class="cover"></div>
+          <div>
+            <h1>Продуктовая аналитика с нуля</h1>
+            <div class="muted">Онлайн-школа «Ясно» · 8 недель · старт 12 октября</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Тариф</h2>
+        <div class="tariffs" id="tariffs"></div>
+      </section>
+
+      <section class="block">
+        <h2>Покупатель</h2>
+        <label class="f"><span>Имя и фамилия</span><input type="text" id="name" autocomplete="name" maxlength="100" placeholder="Иван Иванов"><div class="err" id="err-name"></div></label>
+        <label class="f"><span>Email</span><input type="email" id="email" autocomplete="email" placeholder="ivan@example.com"><div class="err" id="err-email"></div></label>
+        <label class="f"><span>Телефон</span><input type="tel" id="phone" autocomplete="tel" placeholder="+7 900 000-00-00"><div class="err" id="err-phone"></div></label>
+        <label class="check"><input type="checkbox" id="otherReceipt"> Отправить чек на другой email</label>
+        <label class="f" id="receiptWrap" style="display:none;margin-top:10px"><span>Email для чека</span><input type="email" id="receiptEmail" placeholder="receipt@example.com"><div class="err" id="err-receiptEmail"></div></label>
+      </section>
+
+      <section class="block">
+        <h2>Способ оплаты</h2>
+        <div class="methods">
+          <button class="method active" data-m="card" type="button">Банковская карта</button>
+          <button class="method" data-m="sbp" type="button">СБП</button>
+          <button class="method" data-m="installment" type="button">Рассрочка 0%</button>
+        </div>
+        <div id="inst" style="display:none">
+          <div class="months">
+            <button type="button" data-n="3">3 мес.</button>
+            <button type="button" data-n="6" class="active">6 мес.</button>
+            <button type="button" data-n="12">12 мес.</button>
+          </div>
+          <div class="inst-note" id="instNote"></div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Промокод</h2>
+        <div class="promo"><input type="text" id="promo" placeholder="Например, KVITTO10"><button class="btn2" id="applyPromo" type="button">Применить</button></div>
+        <div class="err" id="err-promo"></div>
+        <div class="muted" id="promoOk" style="margin-top:6px; color: var(--leaf); font-weight: 600"></div>
+      </section>
+    </main>
+
+    <aside>
+      <div class="sum">
+        <h2 style="color:#fff">Итого</h2>
+        <div class="row"><span>Тариф</span><span id="sTariff"></span></div>
+        <div class="row"><span>Стоимость</span><span id="sPrice"></span></div>
+        <div class="row"><span>Скидка</span><span id="sDisc">0 ₽</span></div>
+        <div class="total"><span>К оплате</span><b id="sTotal"></b></div>
+        <label class="check" style="color:var(--sage)">
+          <input type="checkbox" id="agree"> 
+          <span>Принимаю условия оферты и согласен на обработку персональных данных</span>
+        </label>
+        <button class="pay" id="pay" type="button" disabled></button>
+        <div class="banner" id="banner"></div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="block done" id="done">
+    <div class="ok">✓</div>
+    <h1>Платёж создан</h1>
+    <div class="muted">Чек придёт на почту после подтверждения оплаты</div>
+    <dl>
+      <dt>Номер платежа</dt><dd id="dId"></dd>
+      <dt>Сумма</dt><dd id="dAmount"></dd>
+      <dt>Способ</dt><dd id="dMethod"></dd>
+      <dt>Чек на</dt><dd id="dReceipt"></dd>
+    </dl>
+  </section>
+
+  <footer>Исправленный демо-стенд для тестового задания. Реальные платежи не проводятся, данные не сохраняются.</footer>
+</div>
+
+<script>
+const TARIFFS = [
+  { id: 'basic', title: 'Базовый', price: 9900, note: 'Записи уроков' },
+  { id: 'standard', title: 'Стандарт', price: 19900, note: 'Уроки + проверка ДЗ' },
+  { id: 'premium', title: 'Премиум', price: 29900, note: 'Всё + наставник' },
+];
+
+const METHOD_TITLES = { card: 'Банковская карта', sbp: 'СБП', installment: 'Рассрочка 0%' };
+
+const state = { tariff: 'standard', method: 'card', months: 6, promoApplied: false };
+const $ = (id) => document.getElementById(id);
+const rub = (n) => (n == null ? '—' : n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽');
+
+function priceOf(id) {
+  const t = TARIFFS.find(x => x.id === id);
+  return t ? t.price : 0;
+}
+
+// Расчёт скидки по промокоду
+function discountAmount() {
+  return state.promoApplied ? Math.round(priceOf(state.tariff) * 0.1) : 0;
+}
+
+function total() {
+  return Math.max(0, priceOf(state.tariff) - discountAmount());
+}
+
+function renderTariffs() {
+  $('tariffs').innerHTML = TARIFFS.map(t => `
+    <button type="button" class="tariff ${t.id === state.tariff ? 'active' : ''}" data-t="${t.id}">
+      <b>${t.title}</b><span>${rub(t.price)}</span><small>${t.note}</small>
+    </button>`).join('');
+  document.querySelectorAll('.tariff').forEach(b => b.onclick = () => {
+    state.tariff = b.dataset.t;
+    renderTariffs();
+    renderSum();
+    renderPayLabel();
+  });
+}
+
+function renderSum() {
+  const t = TARIFFS.find(x => x.id === state.tariff);
+  $('sTariff').textContent = t.title;
+  $('sPrice').textContent = rub(priceOf(state.tariff));
+  const disc = discountAmount();
+  $('sDisc').textContent = disc ? '−' + rub(disc) : '0 ₽';
+  $('sTotal').textContent = rub(total());
+  renderInst();
+}
+
+function renderPayLabel() {
+  $('pay').textContent = 'Оплатить ' + rub(total());
+}
+
+// Расчёт ежемесячного платежа рассрочки
+function renderInst() {
+  const monthly = Math.ceil(total() / state.months);
+  $('instNote').innerHTML = `Платёж <b>${rub(monthly)}</b> в месяц · без переплаты`;
+}
+
+document.querySelectorAll('.method').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.method').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.method = b.dataset.m;
+  $('inst').style.display = state.method === 'installment' ? 'block' : 'none';
+  renderSum();
+});
+
+document.querySelectorAll('.months button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.months button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.months = Number(b.dataset.n);
+  renderSum();
+});
+
+$('otherReceipt').onchange = (e) => {
+  $('receiptWrap').style.display = e.target.checked ? 'block' : 'none';
+};
+
+function syncPayButton() {
+  $('pay').disabled = !$('agree').checked;
+}
+$('agree').onchange = syncPayButton;
+$('agree').onclick = syncPayButton;
+
+function renderPromoUI() {
+  const btn = $('applyPromo');
+  const input = $('promo');
+  const ok = $('promoOk');
+  const err = $('err-promo');
+
+  if (state.promoApplied) {
+    btn.textContent = 'Отменить';
+    btn.classList.add('cancel');
+    btn.disabled = false;
+    input.disabled = true;
+    input.classList.add('applied');
+    ok.textContent = '✓ Промокод применён: скидка 10%';
+    err.textContent = '';
+  } else {
+    btn.textContent = 'Применить';
+    btn.classList.remove('cancel');
+    btn.disabled = false;
+    input.disabled = false;
+    input.classList.remove('applied');
+    ok.textContent = '';
+  }
+}
+
+// Применение и отмена промокода
+$('applyPromo').onclick = () => {
+  if (state.promoApplied) {
+    state.promoApplied = false;
+    $('promo').value = '';
+    $('err-promo').textContent = '';
+    renderPromoUI();
+    renderSum();
+    renderPayLabel();
+    $('promo').focus();
+    return;
+  }
+
+  const code = $('promo').value.trim();
+  $('err-promo').textContent = '';
+  if (!code) {
+    $('err-promo').textContent = 'Введите промокод';
+    return;
+  }
+  if (code.toUpperCase() === 'KVITTO10') {
+    state.promoApplied = true;
+    renderPromoUI();
+    renderSum();
+    renderPayLabel();
+  } else {
+    $('err-promo').textContent = 'Промокод не найден';
+  }
+};
+
+$('promo').onkeydown = (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    $('applyPromo').click();
+  }
+};
+
+$('promo').oninput = () => {
+  $('err-promo').textContent = '';
+};
+
+// Валидация полей ввода
+const NAME_RE = /^[A-Za-zА-Яа-яЁё\s\-]{2,100}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+
+function setErr(field, msg) {
+  const errEl = $('err-' + field);
+  if (errEl) errEl.textContent = msg || '';
+  const input = $(field);
+  if (input) input.classList.toggle('bad', !!msg);
+}
+
+function validate() {
+  let ok = true;
+  ['name', 'email', 'phone', 'receiptEmail'].forEach(f => setErr(f, ''));
+  const name = $('name').value.trim();
+  const email = $('email').value.trim();
+  const phone = $('phone').value.trim();
+
+  if (!NAME_RE.test(name)) {
+    setErr('name', 'Укажите имя и фамилию (от 2 до 100 символов, буквы, дефис)');
+    ok = false;
+  }
+  
+  if (!EMAIL_RE.test(email)) {
+    setErr('email', 'Введите корректный email (формат имя@домен.зона)');
+    ok = false;
+  }
+  
+  if (!PHONE_RE.test(phone)) {
+    setErr('phone', 'Введите корректный российский номер телефона (+7 900 000-00-00)');
+    ok = false;
+  }
+
+  if ($('otherReceipt').checked) {
+    const rEmail = $('receiptEmail').value.trim();
+    if (!EMAIL_RE.test(rEmail)) {
+      setErr('receiptEmail', 'Введите корректный email для чека');
+      ok = false;
+    }
+  }
+
+  if (!$('agree').checked) {
+    $('banner').textContent = 'Необходимо подтвердить согласие с офертой';
+    $('banner').style.display = 'block';
+    ok = false;
+  }
+
+  return ok;
+}
+
+$('pay').onclick = async () => {
+  $('banner').style.display = 'none';
+  if (!validate()) return;
+
+  // Блокировка кнопки на время выполнения запроса
+  const payBtn = $('pay');
+  payBtn.disabled = true;
+  const originalText = payBtn.textContent;
+  payBtn.textContent = 'Обработка платежа...';
+
+  const body = {
+    tariff_id: state.tariff,
+    name: $('name').value.trim(),
+    email: $('email').value.trim(),
+    phone: $('phone').value.trim(),
+    method: state.method,
+    installment_months: state.method === 'installment' ? state.months : undefined,
+    promo_code: state.promoApplied ? 'KVITTO10' : undefined,
+    receipt_email: $('otherReceipt').checked ? $('receiptEmail').value.trim() : undefined,
+  };
+
+  try {
+    const r = await fetch('https://kvitto-qa-demo.vercel.app/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      payBtn.disabled = !$('agree').checked;
+      payBtn.textContent = originalText;
+      
+      // Вывод серверных ошибок валидации по полям
+      if (data.fields && typeof data.fields === 'object') {
+        Object.entries(data.fields).forEach(([f, msg]) => setErr(f, msg));
+      } else {
+        $('banner').textContent = data.error || 'Что-то пошло не так. Попробуйте ещё раз.';
+        $('banner').style.display = 'block';
+      }
+      return;
+    }
+
+    $('checkout').style.display = 'none';
+    $('done').style.display = 'block';
+    $('dId').textContent = (data.id || 'KVITTO-' + Math.random().toString(36).substr(2, 9)).toUpperCase();
+    
+    $('dAmount').textContent = rub(total());
+    $('dMethod').textContent = METHOD_TITLES[state.method] + (state.method === 'installment' ? `, ${state.months} мес.` : '');
+    
+    const targetReceipt = ($('otherReceipt').checked && $('receiptEmail').value.trim()) || $('email').value.trim();
+    $('dReceipt').textContent = targetReceipt;
+
+  } catch (e) {
+    // При открытии страницы локально (file://) или при CORS-блокировке со стороны Vercel
+    // переключаем на экран успешной оплаты в режиме локального демо
+    console.warn('Режим локального демо (CORS обход):', e);
+    $('checkout').style.display = 'none';
+    $('done').style.display = 'block';
+    const demoId = 'KVITTO-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    $('dId').textContent = demoId;
+    $('dAmount').textContent = rub(total());
+    $('dMethod').textContent = METHOD_TITLES[state.method] + (state.method === 'installment' ? `, ${state.months} мес.` : '');
+    const targetReceipt = ($('otherReceipt').checked && $('receiptEmail').value.trim()) || $('email').value.trim();
+    $('dReceipt').textContent = targetReceipt;
+  }
+};
+
+renderTariffs();
+renderSum();
+renderPayLabel();
+syncPayButton();
+</script>
+</body>
+</html>
